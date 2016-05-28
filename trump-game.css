@@ -1,0 +1,51 @@
+body{
+  background-color: gray;
+  font-family: Verdana;
+  font-size: .9em;
+  padding: 0px;
+  margin: 0px;
+}
+
+h1, h4{ 
+  line-height: 1em;
+}
+
+canvas{
+  width: 100vw;
+}
+.canvas-holder{
+  float: left;
+  display: inline-block;
+}
+.sometomfool-right-side-description{
+  width: 100%;
+  background-color: pink;
+  margin:0px;
+  padding: 0em 1em;
+  display: inline-block;
+  position: relative;
+}
+
+.mobile-directions{
+  float: left;
+  max-width: 900px;
+  font-size: 1.5em;
+}
+
+@media (min-width: 910px){
+
+  canvas{
+  height: 700px;
+  width: 900px;
+}
+  .mobile-directions{
+    display: none;
+   
+  }
+  .sometomfool-right-side-description{
+    position: absolute;
+    width:350px;
+    clear: none;
+    height: 803px;
+  }
+}

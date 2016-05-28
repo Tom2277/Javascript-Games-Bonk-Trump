@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="trump-game.css">
+    <meta charset="utf-8" />
+    <title>Trump Clinton Game!</title>
+    <meta name="viewport" content="width=screen-width, initial-scale=1.0">
+    <script type="text/javascript" charset="utf-8"> //will be moved to a js file soon.
+        var previousTime = 0,
+            INTERVAL = 30,  //  See notes at bottom.. this is my first game
+            W = 900,  //I am at DevBootcamp home study introduction phase
+            H = 700,   // this will need to be seriously re-factored.
+            // guy on ball, 
+            guy,
+            //wrecking ball
+            blackball,
+            GRAVITY = 1.05,
+            upSwitch = false,
+            collisionCount = 0,
+            score = 0,
+            masterTicks = 0,
+            finalTicks = 0;
+            victory = false,
+            stopVictory = false;
+            //keys
+            var rightPressed = false;
+            var leftPressed = false;
+            var upPressed = false;
+            var pPressed = false;
+            // Chandelier
+            var chandelierRowCount = 3;
+            var chandelierColumnCount = 5;
+            var chandelierWidth = 75;
+            var chandelierHeight = 20;
+            var chandelierPadding = 10;
+            var chandelierOffsetTop = 80;
+            var chandelierOffsetLeft = 330;
+            var chandeliers = [];
+                for(bcol=0; bcol<chandelierColumnCount; bcol++) {
+                    chandeliers[bcol] = [];
+                    for(brow=0; brow<chandelierRowCount; brow++) {
+                        chandeliers[bcol][brow] = { x: 0, y: 0, status: 1 };//been hit?
+                }
+             }
+            var characterIndex = 0;
+            var presidentSpriteSheets = ["img/JebMarcoSprite.png", "img/rightCruzSpritesheet.png"];
+            var altPresidentSpriteSheets = ["img/JebMarcoSprite.png", "img/leftCruzSpritesheet.png"]
+            var clintonIndex = 0;
+            var boundryLeft = 100;
+            var boundryRight= 700;
+            var clintonSpriteSheets = ["img/HillarySprite.png", "img/HillaryClintonYellowPantsuit.png"]
+            var deadClintonSpriteSheets = ["img/DeadHillaryBluePantsuit.png", "img/DeadHillaryYellowPantsuit.png"]
+            var deadpressprite = null;
+            var deadClintonSprite = null;
+
+
+        window.onload = function(){
+            var canvas = document.getElementById("canvas"),
+                c = canvas.getContext("2d");
+            blackball = new Blackball();
+            guy = new Guy();
+            chain = new Chain();
+            pressprite = new Pressprite();
+            clintonSprite = new ClintonSprite();
+            music = new Audio();
+            // music.src = "misirlou-lucas-king.mp3";
+            music.src = "Stars_and_Stripes.mp3";
+            music.loop = true;
+            music.play();
+
+            var foo = setInterval(
+                function () {
+                    var currentTime = new Date().getTime(),
+                        timeElapsed;
+                    if (previousTime == 0) {
+                        previousTime = currentTime;
+                    }
+                    timeElapsed = currentTime - previousTime;
+
+                    update (timeElapsed, currentTime);
+                    draw (canvas, timeElapsed, currentTime);
+
+                    previousTime = currentTime;
+                }
+            , INTERVAL);
+            foo;
+            };
+
+        function update(timeElapsed, currentTime) {
+            if ((score >= 20) && !(stopVictory)){ // announce victory once only
+                announceVictory();
+            }
+            masterTicks += 1;
+            if ((upPressed) && guy.canFire() ) { //
+                guy.spawnBullet();
+            }
+            var b = guy.bullet;
+            if (b) {
+                b.vx += b.ax*3;
+                b.x += b.vx*.1;
+                    b.vy += b.ay*4;
+                    b.y += b.vy*.1;
+                if (b.x > W) {
+                    guy.killBullet();
+                }
+            }
+            var bb = blackball;
+                bb.x +=  bb.vx;
+                bb.y += bb.vy;
+                //switch up or down direction based on mid-line
+            if (bb.x < 400 && bb.vx <0){
+                upSwitch = true; bb.vy = -6;
+            }   
+            else if (bb.x > 400 && bb.vx > 0){
+                upSwitch = true; bb.vy = -6;
+            }
+              //reverse acceleration based on crossing mid-line
+              upSwitch ? bb.vx = (bb.vx/GRAVITY ) : bb.vx = (bb.vx * GRAVITY);
+              
+            if (bb.x >=  W - bb.width){
+                    bb.x = W - bb.width; // stops ball on right
+                    bb.y = 145; // keep height consistent between swings
+                    bb.vx = 0; // stops speed of ball on right
+                    bb.vy = 0; // stops vertical movement
+                    upSwitch = false;
+                }
+            else if (bb.x <= 0){
+                    bb.x = 0; // stops ball on left
+                    bb.y = 145;
+                    bb.vx = 0; // stops the ball on left
+                    bb.vy = 0; // stops vertical movement
+                    upSwitch = false;
+                }
+            if ((rightPressed) &&  (bb.x == 0)) {                    
+                    bb.vx = 2; bb.vy = 6;//restarts the ball
+                    wrecking1 = new Audio();
+                    wrecking1.src = "wrecking-ballweb.mp3";
+                    wrecking1.volume = .3;
+                    wrecking1.play();   
+                }
+            if ((leftPressed) &&  (bb.x == W - bb.width)) {                    
+                    bb.vx = -2; bb.vy = 6; //restarts the ball 
+                    wrecking3 = new Audio();
+                    wrecking3.src = "wreckingBall3.mp3";
+                    wrecking3.volume = .3;
+                    wrecking3.play();   
+                }
+            if(pPressed){
+                    document.location.reload();
+                }
+            //my guy sitting behind/fixed on ball
+            guy.x = bb.x;
+            guy.y = bb.y - 95;
+            //attach  one end of chain/line to ball
+            chain.x = bb.x + 40;
+            chain.y = bb.y + 20;
+            
+            var ps = pressprite;// move president
+                ps.x += ps.vx;
+                ps.y += ps.vy;
+                if ((ps.x > (900 - ps.sWidthClip + 160)) ||( ps.x < (0 -160))){
+                    ps.vx = -ps.vx;
+                }
+                if (ps.x > (900 - ps.sWidthClip + 160)){ ps.image = new Image();
+                    ps.image.src = altPresidentSpriteSheets[characterIndex];
+                }
+                if (ps.x < -160){ ps.image = new Image(); ps.image.src = presidentSpriteSheets[characterIndex];}
+                ps.vy = Math.sin(2.5- ps.spriteIndex) * 3;//alternating pos/neg number
+
+            var cs = clintonSprite;
+                cs.x += cs.vx;
+                cs.y += cs.vy;
+                if ((cs.x > (900 - cs.sWidthClip + 160)) ||( cs.x < (0 -160))){
+                    cs.vx = -cs.vx;
+                }
+                if ((cs.x > boundryLeft) && (cs.x < boundryRight)){cs.vx = -cs.vx}
+
+                
+            detectCollisions();
+        }
+        
+        function draw (canvas, timeElapsed, currentTime) {
+            var c = canvas.getContext("2d"),
+                b = guy.bullet;
+            clearCanvas(canvas);
+            drawBackground(c);
+            if (b) { b.draw(c); }
+            guy.draw(c);
+            blackball.draw(c);
+            chain.draw(c);
+            pressprite.draw(c);
+            clintonSprite.draw(c);
+            drawText(c);
+            drawchandeliers(c);
+            if (deadpressprite){deadpressprite.draw(c); } ;
+            if (deadClintonSprite){deadClintonSprite.draw(c); } ;
+            if (victory){drawVictoryMessage(c);}
+        }
+
+        function clearCanvas(canvas) {
+            var c = canvas.getContext("2d");
+            c.beginPath();
+            c.rect(0,0,W,H);
+            c.fillStyle = "navyblue";//"#CCCC99";
+            c.fill();
+        }
+
+        function Blackball (){
+            this.x = 0;
+            this.y = 145;
+            this.width = 100; //arbitrary .. does not currently change display size
+            this.height = 100;
+            this.vx = 2;
+            this.vy = 6;
+            this.image = new Image();
+            this.image.src = "img/blackball.png";
+            this.draw = function (context) {
+                context.drawImage(this.image, this.x, this.y);
+            }   
+        }
+        
+        function Chain() {
+            // position
+            this.x = 0;
+            this.y = 145;
+            this.size = 10;
+            this.color = "#201F2F";
+            this.draw = function(context){
+                context.beginPath();
+                context.moveTo(450,0);
+                context.lineTo(this.x, this.y);
+                context.strokeStyle=this.color;
+                context.stroke();
+                context.lineWidth=4;   
+            }
+        }
+
+        function drawchandeliers(c) {
+            for(bcol=0; bcol<chandelierColumnCount; bcol++) {
+                for(brow=0; brow<chandelierRowCount; brow++) {
+                    if(chandeliers[bcol][brow].status == 1) {
+                        var chandelierX = (brow*(chandelierWidth+chandelierPadding))+chandelierOffsetLeft;
+                        var chandelierY = (bcol*(chandelierHeight+chandelierPadding))+chandelierOffsetTop;
+                        chandeliers[bcol][brow].x = chandelierX;
+                        chandeliers[bcol][brow].y = chandelierY;
+                        c.beginPath();
+                        c.rect(chandelierX, chandelierY, chandelierWidth, chandelierHeight);
+                        c.fillStyle = "white";
+                        c.fill();
+                        c.closePath();
+                    }
+                }
+            }
+        }
+
+        function Guy () {
+            // position
+            this.x = 200;
+            this.y = 300;
+            //velocity
+            this.vx = 10;
+            this.vy = 10;
+            // my pic
+            this.image = new Image();
+            this.image.src = "img/trumpswingerSS.png";
+            this.draw = function (context) {
+                context.drawImage(this.image, this.x, this.y);
+            }                  
+                this.bullet = null;
+                this.canFire = function () {
+                    return this.bullet == null;
+                }    
+                this.spawnBullet = function () {
+                    this.bullet = new Bullet();
+                    this.bullet.x = this.x + this.image.width / 2;
+                    this.bullet.y = (this.y + this.image.height / 2 - 100);
+                    shot = new Audio();
+                    shot.src = "shot.mp3";
+                    shot.play();
+                }
+                this.killBullet = function () {
+                    this.bullet = null;
+                }   
+        }
+
+        function Bullet() {
+            this.x = 0;
+            this.y = 0;
+            this.vx = 0;
+            this.ax = 2;
+            this.vy = 0;
+            this.ay = -4;
+            this.image = new Image();
+            this.image.src = "img/bullet.png";
+            this.draw = function (context) {
+                context.drawImage(this.image, this.x, this.y);
+            }
+        }
+        function drawText(c) {
+            c.font = "35px Arial";
+            c.fillStyle = "navyblue";//"#0095DD";
+            c.fillText("Score: " + score, 8, 60);
+            c.fillText("Ticks" + masterTicks, 720, 60);
+        }
+        function Pressprite(){
+            this.x = -160;
+            this.y = 470;
+            this.vx = 3;
+            this.vy = 0;
+            // this.hit = false;
+            this.numberOfFrames = 6;
+            this.spriteIndex= 0;
+            this.tickKeeper = 0;
+            this.ticksPerIndex = 10;
+            this.indexUpdate = function(){
+                this.tickKeeper ++;
+                this.spriteIndex = Math.floor((this.tickKeeper)/(this.ticksPerIndex));
+                if (this.spriteIndex >= this.numberOfFrames){
+                    this.tickKeeper = 0; this.spriteIndex = 0;
+                }  
+            }
+            // this.livesprites = ["img/JebMarcoSprite.png", "img/rightCruzSpritesheet.png"]
+            this.image = new Image();
+            // this.image.src = this.livesprites[characterIndex];
+            this.image.src = presidentSpriteSheets[characterIndex];
+            this.startX = 0;
+            this.startY = 0;
+            this.sWidthClip = 150;
+            this.sHeightClip = 150;
+            this.resizedWidth = 150;
+            this.resizedHeight = 150;
+
+            this.kill = function(){ //current system replaces with new object.. doesn't really
+                (characterIndex > 0) ? characterIndex = 0 :characterIndex ++;//advance character index or reset it
+                pressprite = new Pressprite;
+                pressprite.vx = 0;
+            }  
+            //syntax context.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh)
+            this.draw = function(c){                    
+                this.startX = (this.sWidthClip * this.spriteIndex);//pick frame                
+                this.indexUpdate();
+                c.drawImage(
+                    this.image,this.startX,this.startY,this.sWidthClip,this.sHeightClip,
+                    this.x, this.y, this.resizedWidth, this.resizedHeight)
+            }
+
+        }
+
+        function DeadPresSprite(){
+            this.x = pressprite.x;
+            this.y = pressprite.y;
+            this.vx = 0;
+            this.vy = 0;
+            this.numberOfFrames = 6;
+            this.spriteIndex= 0;
+            this.tickKeeper = 0;
+            this.ticksPerIndex = 15;
+            this.indexUpdate = function(){
+                this.tickKeeper ++;
+                this.spriteIndex = Math.floor((this.tickKeeper)/(this.ticksPerIndex));
+                //after animation frames exhausted start new sprite created elsewhere into motion
+                if (this.spriteIndex >= this.numberOfFrames){
+                    deadpressprite = null; // ONLY plays animation once
+                    // pressprite.vx = (3.3 + (.2 * collisionCount)); // + speed
+                    // pressprite.y += (1);
+                    clintonSprite.y = 495;
+                    clintonSprite.vx = (3.3 + (.2 * collisionCount)); // + speed
+                    boundryLeft = 250; boundryRight = 520;
+                    this.tickKeeper = 0; this.spriteIndex = 0;  
+                }  
+            }
+            this.deadsprites = ["img/deadJebMarcoSpritesheet.png", "img/deadCruzSpritesheet.png"]
+            this.image = new Image();
+            this.image.src = this.deadsprites[characterIndex];
+            this.startX = 0;
+            this.startY = 0;
+            this.sWidthClip = 150;
+            this.sHeightClip = 150;
+            this.resizedWidth = 150;
+            this.resizedHeight = 150;
+
+            this.draw = function(c){                    
+                this.startX = (this.sWidthClip * this.spriteIndex);//pick frame                
+                this.indexUpdate();
+                c.drawImage( this.image,this.startX,this.startY,this.sWidthClip,this.sHeightClip, this.x, this.y, this.resizedWidth, this.resizedHeight)
+            }
+        }
+
+        function ClintonSprite(){
+            // console.log("got back to new ClintonSprite");
+            (clintonIndex === 0) ? this.x = 10 : this.x = 775;
+            // this.x = 60;
+            this.y = 475;
+            this.vx = 0;
+            this.vy = 0;
+            // this.hit = false;
+            this.numberOfFrames = 6;
+            this.spriteIndex= 0;
+            this.tickKeeper = 0;
+            this.ticksPerIndex = 14;
+            this.indexUpdate = function(){
+                this.tickKeeper ++;
+                this.spriteIndex = Math.floor((this.tickKeeper)/(this.ticksPerIndex));
+                if (this.spriteIndex >= this.numberOfFrames){
+                    this.tickKeeper = 0; this.spriteIndex = 0;
+                }  
+            }
+            this.image = new Image();
+            this.image.src = clintonSpriteSheets[clintonIndex];
+            this.startX = 0;
+            this.startY = 0;
+            this.sWidthClip = 150;
+            this.sHeightClip = 150;
+            this.resizedWidth = 150;
+            this.resizedHeight = 150;
+
+            this.kill = function(){
+                (clintonIndex > 0) ? clintonIndex = 0 : clintonIndex ++;//advance character index or reset it
+                clintonSprite = new ClintonSprite;
+                clintonSprite.vx = 0;
+            } ; 
+            //syntax context.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh)
+            this.draw = function(c){                    
+                this.startX = (this.sWidthClip * this.spriteIndex);//pick frame                
+                this.indexUpdate();
+                c.drawImage(
+                    this.image,this.startX,this.startY,this.sWidthClip,this.sHeightClip,
+                    this.x, this.y, this.resizedWidth, this.resizedHeight)
+            };
+
+        }
+
+        function DeadClintonSprite(){
+            this.x = clintonSprite.x;
+            this.y = clintonSprite.y;
+            this.vx = 0;
+            this.vy = 0;
+            this.numberOfFrames = 6;
+            this.spriteIndex= 0;
+            this.tickKeeper = 0;
+            this.ticksPerIndex = 15;
+            this.indexUpdate = function(){
+                this.tickKeeper ++;
+                this.spriteIndex = Math.floor((this.tickKeeper)/(this.ticksPerIndex));
+                //after animation frames exhausted start existing new sprite into motion
+                if (this.spriteIndex >= this.numberOfFrames){
+                    deadClintonSprite = null; // ONLY plays animation once
+                    pressprite.vx = (3.3 + (.2 * collisionCount)); // + speed
+                    boundryLeft= 100; boundryRight = 700;
+                    // clintonSprite.vx = (3.3 + (.2 * collisionCount)); // + speed
+                    // clintonSprite.y += (1); //lowers path slightly each kill
+                    this.tickKeeper = 0; this.spriteIndex = 0;  
+                }  
+            }
+            // this.deadClintonSprites = ["img/DeadHillaryBluePantsuit.png", "img/DeadHillaryYellowPantsuit.png"]
+            this.image = new Image();
+            this.image.src = deadClintonSpriteSheets[clintonIndex];
+            this.startX = 0;
+            this.startY = 0;
+            this.sWidthClip = 150;
+            this.sHeightClip = 150;
+            this.resizedWidth = 150;
+            this.resizedHeight = 150;
+
+            this.draw = function(c){                    
+                this.startX = (this.sWidthClip * this.spriteIndex);//pick frame                
+                this.indexUpdate();
+                c.drawImage( this.image,this.startX,this.startY,this.sWidthClip,this.sHeightClip, this.x, this.y, this.resizedWidth, this.resizedHeight)
+            }
+        }
+
+
+        function drawBackground(c){
+            stageImage = new Image;
+            stageImage.src = "img/clinton-trump-canvas.png";
+            c.drawImage(stageImage, 0,0)
+        }
+
+
+        document.addEventListener("keydown", keyDownHandler, false);
+        document.addEventListener("keyup", keyUpHandler, false);
+        document.addEventListener("keydown", function (e) { //disables scrolling via S Rohan
+        if([37,38,39,40,32].indexOf(e.keyCode) > -1){ e.preventDefault(); } }, false);
+
+        function keyDownHandler(e) {
+            if(e.keyCode == 39) {
+                rightPressed = true;
+            }
+            else if(e.keyCode == 37) {
+                leftPressed = true;
+            }
+            else if(e.keyCode == 38){
+                upPressed = true;
+            }
+            else if(e.keyCode == 80){
+                pPressed = true;
+            }
+        }
+
+        function keyUpHandler(e) {
+            if(e.keyCode == 39) {
+                rightPressed = false;
+            }
+            else if(e.keyCode == 37) {
+                leftPressed = false;
+            }
+            else if(e.keyCode == 38){
+                upPressed = false;
+            }
+            else if(e.keyCode == 80){
+                pPressed = false;
+            }
+        }
+
+        function canvasTouch(){
+            rightPressed = true;
+            leftPressed = true;
+            upPressed =true;
+        }
+        function canvasUnTouch(){
+            rightPressed = false;
+            leftPressed = false;
+            upPressed = false;
+        }
+        window.addEventListener("touchstart", canvasTouch, false);
+        window.addEventListener("touchend", canvasUnTouch, false);
+
+        function detectCollisions(){ 
+            if (pressprite.x < (blackball.x + blackball.width) &&
+                pressprite.x + pressprite.sWidthClip > blackball.x &&
+                (pressprite.y + 10) < blackball.y + (blackball.height - 15) &&
+                pressprite.sHeightClip + pressprite.y + 10 > (blackball.y -15)) {
+                // collision detected!
+                    var groan = new Audio();
+                    groan.src = "collision.mp3";
+                    groan.play();
+                    collisionCount ++ ;
+                    score += 2;  //(more points for a collision)
+                    // pressprite.hit = true;
+                    deadpressprite = new DeadPresSprite;
+                    pressprite.kill(); //could be asynchronous issue
+            }  
+            if (clintonSprite.x < (blackball.x + blackball.width) &&
+                clintonSprite.x + clintonSprite.sWidthClip > blackball.x &&
+                (clintonSprite.y + 10) < blackball.y + (blackball.height - 15) &&
+                clintonSprite.sHeightClip + clintonSprite.y + 10 > (blackball.y -15)) {
+                // collision detected!
+                    var groan = new Audio();
+                    // groan.src = "collision.mp3";
+                    // groan.play();
+                    clink = new Audio();
+                    clink.src = "glass.mp3";
+                    clink.play();
+                    collisionCount ++ ;
+                    score += 2;  //(more points for a collision)
+                    // clintonSprite.hit = true;
+                    deadClintonSprite = new DeadClintonSprite;
+                    clintonSprite.kill(); //could be asynchronous issue
+            }
+
+            // chandelier collisions below
+            var bullet = guy.bullet;
+            if (bullet){
+                for(bcol=0; bcol<chandelierColumnCount; bcol++) {
+                    for(brow=0; brow<chandelierRowCount; brow++) {
+                        var b = chandeliers[bcol][brow]; //test location with shorthand below
+                        if(b.status == 1){ //showing or not "status" is a foo named key in hash
+                            if(bullet.x > b.x && bullet.x < b.x+chandelierWidth && bullet.y > b.y && bullet.y < b.y+chandelierHeight) {
+                                clink = new Audio();
+                                clink.src = "glass.mp3";
+                                clink.play();
+                                b.status = 0; //after hit set to invisible
+                                score ++ ;
+                            }
+                        }
+                    }
+                }
+            }
+        } 
+
+        function drawVictoryMessage(c){
+            c.font = "35px Arial";
+            c.fillStyle = "navyblue"; //"#0095DD";
+            c.fillText("You are a Winner !", 200, 260);
+            c.fillText("It took you only " + finalTicks + " Ticks", 200, 300);
+            c.fillText("Press P to Play Again!", 200, 360);
+            // clearInterval(foo); //looking for a place for this currently keeps updating
+        }
+
+        function announceVictory(){
+            victory = true;
+            stopVictory = true;
+            pressprite.vx = 0;
+            pressprite.x = 300;
+            music.loop = false;
+            music.pause();
+            finalTicks = masterTicks + " Teensy";
+            winMusic = new Audio();
+            winMusic.src = "odetojoy.mp3";
+            winMusic.play();
+            winMusic.loop = true;
+            // clearInterval(foo); // won't work here or anywhere
+        } 
+
+    </script>
+</head>
+<body>
+<div class="mobile-container" style="display:inline-block">
+    <div class="canvas-holder"><canvas id="canvas" width="900" height="700" />
+    </div>
+    <div class="mobile-directions">
+        <span>Mobile Directions: press (not tap) screen for all actions</span>
+    </div>
+    <div class="bottom-ad-banner" style="clear:both; max-width: 900px; height: 100px;background-color: white;"> <h2> banner ad here</h2>
+    </div>
+
+</div> 
+<div class="sometomfool-right-side-description" style="">
+    <div class="side-item" style="display: inline-block; width: 340px; float: left;">
+        <div style="width: 336px; height: 280px; background-color:beige;">
+            Google ads
+        </div>
+    </div>
+        <div class="side-item" style="display: inline-block; width: 340px;">
+            <h1>Trump Game!</h1>
+            <h1>Clinton Game!</h1>
+            <h2>Wrecking-ball game!</h2>
+        </div>
+      
+        
+
+    <div class="side-item" style="display: inline-block; width: 340px;">
+        <div style="width: 336px; height: 280px; background-color:beige;">
+            Google ads
+        </div>
+    </div>
+</div>
+<!-- <div class="bottom-ad-banner" style="clear:both; width: 100%; height: 200px;background-color: white;"> <h2> banner ad here</h2></div>
+ --><div class="list-holder" style="clear:both;">
+    <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
+        <a href="http:toptenmaker.com">
+            <span>Visit TopTenMaker.com! Vote and share lists!</span>
+            <img src="link-images/dog_breeds.png" style="width:160px;">
+        </a>
+    </div>
+    <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
+        <a href="http:toptenmaker.com">
+            <span>Visit TopTenMaker.com! Vote and share lists!</span>
+            <img src="link-images/dog_breeds.png" style="width:160px;">
+        </a>
+    </div>
+    <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
+        <a href="http:toptenmaker.com">
+            <span>Visit TopTenMaker.com! Vote and share lists!</span>
+            <img src="link-images/dog_breeds.png" style="width:160px;">
+        </a>
+    </div> <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
+        <a href="http:toptenmaker.com">
+            <span>Visit TopTenMaker.com! Vote and share lists!</span>
+            <img src="link-images/dog_breeds.png" style="width:160px;">
+        </a>
+    </div>
+     <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
+        <a href="http:toptenmaker.com">
+            <span>Visit TopTenMaker.com! Vote and share lists!</span>
+            <img src="link-images/dog_breeds.png" style="width:160px;">
+        </a>
+    </div>
+</div>
+<!-- <div class="mobile-directions">
+    <h2>Touch Screen/Mobile Phone Directions: press and release screen for all actions</h2>
+</div> -->
+
+<div class="privacy-policy" style="display: inline-block; width: 340px;">
+    <p>Sometomfool.com privacy policy</p>
+    <p>Third party vendors, including Google, use cookies to serve ads based on a user's prior visits to this and other websites. Google's use of the DoubleClick cookie enables it and its partners to serve ads to users based on their visit to this and/or other sites on the Internet.</p>
+    <p>Users may opt out of third-party vendor's use of cookies and the use of the DoubleClick cookie for interest-based advertising by visiting aboutads.info.</p>
+
+</div>
+<div class="" style="display: inline-block; width: 340px;">
+    <span>Copyright 2015, 2016 , Tom Norian</span>
+            <p>
+                Hire Me! <a href="../index.html">- Tom Norian</a>
+            </p>
+</div>
+ 
+        <div class="side-item" style="display: inline-block; width: 340px;">
+
+            <p>Check out my <a href="http://www.huecolorgame.com/">color picking game</a> </p>
+        </div>
+</body>
+<!-- credits for music use go to:
+ Souza Stars and Stripes forever in public domain, performed by us marine band.
+ Niklas Drude - remix composition and performance of Beethoven's Ode to Joy https://www.youtube.com/watch?v=JIGkTyQtlNg -->
+ <!-- Special thanks to Mims Wright and this video tutorial https://vimeo.com/74008847
+Special thanks also to this tutorial at Modzilla Developer Network https://developer.mozilla.org/en-US/docs/Games/Workflows/2D_Breakout_game_pure_JavaScript/Create_the_Canvas_and_draw_on_it
+As of June 2015 there are a handful of code blocks remaining pulled from those tutorials. -->
+
+</html>
