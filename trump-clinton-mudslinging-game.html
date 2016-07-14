@@ -1,0 +1,730 @@
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="trump-game.css">
+  <meta charset="utf-8" />
+  <title>Mudslinging: Trump vs Clinton</title>
+  <meta property="og:url"           content="https://sometomfool.com/trump-clinton-mudslinging-game.html" />
+  <meta property="og:type"          content="website" />
+  <meta property="og:title"         content="Mudslinging: Trump vs. Clinton game" />
+  <meta property="og:description"   content="Trump-vs-Clinton Game: Shoot mud at targets of the presidential candidates to determine the election results!" />
+  <meta property="og:image"         content="http://link-images/trump-game-mud-sling.png" />
+  <meta name="description" content="Fun and Silly, Shoot mud at Trump and Clinton to Determine the Election Results">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script type="text/javascript" charset="utf-8">
+
+    var H = 700,
+        W = 900,
+        INTERVAL = 30,
+        backgroundImg = null,
+        backgroundColor = 'aliceblue';
+
+
+    // var e = window.event;
+    var rightPressed = false;
+    var leftPressed = false;
+    var upPressed = false;
+    var downPressed = false;
+    var spacePressed = false;
+    var pPressed = false;
+    var enterPressed = false;
+    var mouseIsUp = false;
+    var mouseIsDown = false;
+    var mouseX;
+    var mouseY;
+    var mobileUser = false;
+    var pouch = new Pouch;
+    var leftCord = new LeftCord;
+    var rightCord = new RightCord;
+    var mud = new Mud;
+    var mudFlying = false;
+    var gameOver = false;
+    var slingLeftBracketX = 380;
+    var slingLeftBracketY = 360;
+    var deadMudManager = new DeadMudManager();
+    var trumpTargetManager = new TrumpTargetManager(10);
+    var clintonTargetManager = new ClintonTargetManager(10);
+    var time = Date.now();
+    var shotsRemaining = 10;
+    var score = 0;
+    var trumpVote = 43;
+    var clintonVote = 43;
+    var trumpScoreBar = new TrumpScoreBar();
+    var clintonScoreBar = new ClintonScoreBar();
+    var SoundEffects = {
+      phhft : new Audio("phhft.mp3")
+    } //todo: try moving more sounds here.
+
+
+    window.onload = function(){
+      var c = document.getElementById("canvas"),
+          context = c.getContext("2d");
+      //yet another global variable for round
+      setMouseEvents(c);
+      round =  setInterval(
+        function(){
+          // time = Date.now();
+
+          update();
+          draw(context);
+        }, INTERVAL)
+
+      round
+    }
+
+    function update(){
+      if (shotsRemaining < 1){ gameOver = true; }
+      if ((spacePressed || mouseIsUp) && !gameOver){ mudFlying = true; mouseIsUp =false} 
+      if (mudFlying===true && mud.vx === 0 && shotsRemaining > 0){
+        SoundEffects.phhft.play();
+        shotsRemaining -= 1;
+        mud.vx = Math.floor((slingLeftBracketX - mud.x)/8);
+        mud.vy = Math.floor((slingLeftBracketY - mud.y)/5);
+        pouch.vx = Math.floor((slingLeftBracketX - mud.x)/9);
+        pouch.vy = Math.floor((slingLeftBracketY - mud.y)/12);        
+      }
+      if (mudFlying == true){ 
+        pouch.vy +=2;
+        if (pouch.x > 350){pouch.vx = -(pouch.vx * .5) };
+        if (pouch.vx < 2){pouch.vx = 0; pouch.vy = 0; pouch.x = 310; pouch.y = 500;}
+
+
+        mud.vy += 2;
+      
+        if (mud.y > (H - 15)){ mud.vy = -(mud.vy * .40); mud.vx = (mud.vx * .60);}
+        if (mud.x > (W - 15) || mud.x < 0){mud.vx = (-(mud.vx * .50))}
+        if (mud.vx < 4 && mud.vx > -4){
+          deadMudManager.spawnSplat(mud.x, mud.y)
+          mudFlying= false; 
+          // mud.vx = 0; 
+          // mud.vy = 0;
+          mud = new Mud;
+        }
+      };
+
+      pouch.x = pouch.x + pouch.vx;
+      pouch.y = pouch.y + pouch.vy;
+
+      if (leftPressed && pouch.x > 30){ pouch.x -= 2;}
+      if (rightPressed && pouch.x < 300){ pouch.x += 4;}
+      if (upPressed && pouch.y > 350){ pouch.y -= 3;}
+      if (downPressed && pouch.y < 670){ pouch.y += 3;}
+      if (enterPressed || pPressed){ document.location.reload();}
+
+
+      // var e = document.event;
+      if (!mobileUser && mouseIsDown && (mouseX > pouch.x - 40 && mouseX < pouch.x + 40) ){
+        pouch.x = mouseX;
+        pouch.y = mouseY;
+      }
+
+      leftCord.x = pouch.x
+      rightCord.x = pouch.x
+      leftCord.y = pouch.y - 20;
+      rightCord.y = pouch.y + 20;
+
+      if (!mudFlying){mud.x = pouch.x + 5;}
+      if (!mudFlying){mud.y = pouch.y - 5;}
+
+      mud.x = mud.x + mud.vx;
+      mud.y = mud.y + mud.vy;
+
+      detectCollisions();
+
+      trumpScoreBar.x = trumpVote * 20 -200;
+      clintonScoreBar.x = clintonVote * 20 -200;
+
+      // console.log(time);
+      // if (Date.now() - time > 1000*60*3){
+      // // if(true){
+      //   console.log("games over dude");
+      //   clearInterval(round);
+      // }
+
+    }
+
+    function draw(context){
+      clearCanvas(context);
+      pouch.draw(context);
+      leftCord.draw(context);
+      rightCord.draw(context);
+      if (gameOver){ drawVictoryMessage(context);}
+      mud.draw(context);
+      deadMudManager.draw(context);
+      trumpTargetManager.draw(context);
+      clintonTargetManager.draw(context);
+      trumpScoreBar.draw(context);
+      clintonScoreBar.draw(context);
+      drawText(context);
+      drawSlingPost(context);
+      drawDirections(context);
+    }
+
+    function clearCanvas(context){
+      context.beginPath();
+      context.rect(0,0, W, H);
+      context.fillStyle = backgroundColor;
+      context.fill();
+    }
+
+
+    function drawSlingPost(context){
+      this.image = new Image();
+      this.image.src = "slingshot-game-images/slingshot2.png";
+      context.drawImage(this.image, 226, 328); 
+    }
+    function drawDirections(context){
+      this.image = new Image();
+      this.image.src = "slingshot-game-images/directions.png";
+      context.drawImage(this.image, 12, 100); 
+    }
+
+     function Mud(){
+        this.x = 170;
+        this.y = 490;
+        this.vx = 0;
+        this.vy = 0;
+        this.image= new Image()
+        this.image.src = "slingshot-game-images/mud.png"
+        this.color = "saddlebrown";
+        this.draw = function(context){
+          context.beginPath();
+          context.moveTo(200,200)
+          context.arc(this.x, this.y, 10, 0, 2 * Math.PI, false);
+          context.fillStyle = this.color;
+          context.fill();
+          context.drawImage(this.image, this.x - 15, this.y - 15, 30, 30)
+        }
+      }
+
+     function DeadMud(x, y){
+        this.x = x;
+        this.y = y;
+        this.image= new Image()
+        this.image.src = "slingshot-game-images/mud.png"
+        this.color = "saddlebrown";
+        this.draw = function(context){
+          context.beginPath();
+          context.moveTo(this.x, this.y)
+          context.arc(this.x, this.y, 10, 0, 2 * Math.PI, false);
+          context.fillStyle = this.color;
+          context.fill()
+          context.drawImage(this.image, this.x - 15, this.y - 15, 30, 30)
+        }
+      }
+
+      function DeadMudManager(){
+        this.splats = [];
+        this.spawnSplat = function(x,y){
+          var splat = new DeadMud(x,y);
+          this.splats.push(splat);
+        }
+        this.draw = function(context){
+          for (var i = 0; i < this.splats.length; i++) {
+            // console.log("draw a splat");
+            var splat = this.splats[i];
+            // console.log(splat.x);
+            if (splat != null){
+              splat.draw(context);
+            }
+          };
+        }
+      }
+
+    function TrumpTarget(x,y){
+      this.x = x || 600;
+      this.y = y || 150;
+      this.image = new Image();
+      this.image.src = "slingshot-game-images/trumpTarget.png";
+      this.draw = function (context) {
+        context.drawImage(this.image, this.x, this.y, 50, 50);
+      }   
+    }
+
+    function TrumpTargetManager(number){
+      var x, y;
+      this.trumpTargets = [];
+      for (var i = 0; i < number; i++) {
+        if (i < 5){
+          x = 775; y = (( i * 130) + 10);
+        }else{
+          x = 830; y = (( i * 130) - 640)
+        }
+        var target = new TrumpTarget(x,y)
+        this.trumpTargets.push(target)
+      };
+      this.draw = function(context){
+        for (var i = 0; i < this.trumpTargets.length; i++) {
+          var head = this.trumpTargets[i];
+          head.draw(context);
+        };
+      }
+    }
+
+    function ClintonTarget(x,y){
+      this.x = x || 600;
+      this.y = y || 150;
+      this.image = new Image();
+      this.image.src = "slingshot-game-images/clintonTarget.png";
+      this.draw = function (context) {
+      context.drawImage(this.image, this.x, this.y, 50, 50);
+      }   
+    }
+
+    function ClintonTargetManager(number){
+      var x, y;
+      this.clintonTargets = [];
+      for (var i = 0; i < number; i++) {
+        if (i < 5){
+          x = 775; y = (( i * 130) + 70);
+        }else{
+          x = 830; y = (( i * 130) - 580)
+        }
+        var target = new ClintonTarget(x,y)
+        this.clintonTargets.push(target)
+      };
+      this.draw = function(context){
+        for (var i = 0; i < this.clintonTargets.length; i++) {
+          var head = this.clintonTargets[i];
+          head.draw(context);
+        };
+      }
+    }
+
+    function Pouch(){
+        this.x = 150;
+        this.y = 500;
+        this.vx = 0;
+        this.vy = 0;
+        this.color = "peru";
+        this.image= new Image()
+        this.image.src = "slingshot-game-images/strap.png"
+        this.draw = function(context){
+          context.beginPath();
+          context.moveTo(200,200)
+          context.arc(this.x, this.y, 10, 0, 2 * Math.PI, false);
+          context.fillStyle = this.color;
+          context.fill()
+          context.drawImage(this.image, this.x - 15, this.y - 25, 30, 50)
+        }
+      }
+
+
+    function LeftCord() {
+            // position
+            this.x = 150;
+            this.y = 490;
+            // this.cordWidth = 7;
+            this.color = "tan";
+            this.draw = function(context){
+                context.beginPath();
+                context.moveTo(slingLeftBracketX, slingLeftBracketY )//(330,400);
+                context.lineTo(this.x, this.y);
+                context.strokeStyle=this.color;
+                (this.x < 175) ? this.cordWidth = 5 : this.cordWidth = 9;
+                context.lineWidth= this.cordWidth;   
+                context.stroke();
+            }
+        }
+
+      function RightCord() {
+            // position
+            this.x = 150;
+            this.y = 510;
+            // this.cordWidth = 19;
+            this.color = "tan";
+            this.draw = function(context){
+                context.beginPath();
+                context.moveTo(351, 450);
+                context.lineTo(this.x, this.y);
+                context.strokeStyle=this.color;
+                (this.x < 175) ? this.cordWidth = 7 : this.cordWidth = 10;
+                context.lineWidth= this.cordWidth;   
+                context.stroke();
+            }
+        }
+
+      function ClintonScoreBar() {
+        this.x = 500;
+        this.y = 45;
+        this.draw = function(context){
+          context.beginPath();
+          context.moveTo(1, 45);
+          context.lineTo((this.x - 200), this.y);
+          context.strokeStyle="blue";
+          context.lineWidth = 15;
+          context.stroke();
+        }
+      }
+
+      function TrumpScoreBar() {
+        this.x = 500;
+        this.y = 95;
+        this.draw = function(context){
+          context.beginPath();
+          context.moveTo(1, 95);
+          context.lineTo((this.x - 200), this.y);
+          context.strokeStyle="red";
+          context.lineWidth = 15;
+          context.stroke();
+        }
+      }
+
+      function drawText(context) {
+          context.font = "30px Arial";
+          context.fillStyle = "black";//"#0095DD";
+          context.fillText("Clinton Support: " + clintonVote + "%", 300, 30);
+          context.fillText("Trump Support:  " + trumpVote + "%", 300, 80);
+          context.fillText("Shots Remaining: " + shotsRemaining , 610, 674);
+        } 
+
+      function drawVictoryMessage(context) {
+        var message = "A tie creates political chaos!"
+          context.font = "30px Arial";
+          context.fillStyle = "black";//"#0095DD";
+          if (clintonVote > trumpVote){
+            message= "Hillary Clinton Wins"
+          }else if(trumpVote > clintonVote){ message = "Trump Wins"}
+          context.fillText(message, 300, 230);
+          context.fillText("Press Enter to Play Again", 300, 262);
+        }
+
+  
+      document.addEventListener("keydown", keyDownHandler, false);
+      document.addEventListener("keyup", keyUpHandler, false);
+      document.addEventListener("keydown", function (e) { //disables scrolling
+        if([37,38,39,40,32].indexOf(e.keyCode) > -1){ e.preventDefault(); } 
+      }, false);
+
+      function keyDownHandler(e) {
+            if(e.keyCode == 39) {
+                rightPressed = true;
+            }
+            else if(e.keyCode == 37) {
+                leftPressed = true;
+            }
+            else if(e.keyCode == 38){
+                upPressed = true;
+            }
+            else if(e.keyCode == 40){
+                downPressed = true;
+            }
+            else if(e.keyCode == 32){
+                spacePressed = true;
+            }
+            else if(e.keyCode == 80){
+                pPressed = true;
+            }
+            else if(e.keyCode == 13){
+                enterPressed = true;
+            }
+        }
+
+        function keyUpHandler(e) {
+            if(e.keyCode == 39) {
+                rightPressed = false;
+            }
+            else if(e.keyCode == 37) {
+                leftPressed = false;
+            }
+            else if(e.keyCode == 38){
+                upPressed = false;
+            }
+            else if(e.keyCode == 40){
+                downPressed = false;
+            }
+            else if(e.keyCode == 32){
+                spacePressed = false;
+            }
+            else if(e.keyCode == 80){
+                pPressed = false;
+            }
+            else if(e.keyCode == 13){
+                enterPressed = false;
+            }
+        }
+
+        // mouse- touch events
+        function setMouseEvents(canvas){
+          canvas.addEventListener("mousedown", mouseDown, false);
+          canvas.addEventListener("mousemove", mouseMove, false);
+          canvas.addEventListener("mouseup", mouseUp, false);//should it be document?
+
+          canvas.addEventListener("touchstart", mouseTouchDown, false);
+          // canvas.addEventListener("touchmove", mouseMove, false);
+          canvas.addEventListener("touchend", mouseUp, false);//should be document?
+        }
+
+        function mouseDown(e){
+          mouseIsDown = true;
+        }
+
+
+        function mouseTouchDown(e){
+          mobileUser = true;
+          mouseIsDown = true;
+          // if (mouseIsDown){
+            // mouseX = e.pageX;
+            // mouseY = e.pageY;
+          // }
+          pouch.x = e.pageX;
+          pouch.y = e.pageY;
+        } 
+
+        function mouseMove(e){
+          // if (e.target == canvas) {e.preventDefault();}
+          if (mouseIsDown){
+            mouseX = e.pageX;
+            mouseY = e.pageY;
+          }
+        }
+
+        function mouseUp(e){
+          mouseIsDown = false;
+          mouseIsUp = true;
+        }
+
+
+        function detectCollisions(){ 
+          // console.log("got to detectCollisions")
+          // var mudNow = mud;
+          var existingTrumpTargets = trumpTargetManager.trumpTargets;
+          var existingClintonTargets = clintonTargetManager.clintonTargets;
+          if (mud){
+            for (var i = 0; i < existingTrumpTargets.length; i++) {
+              var targ = existingTrumpTargets[i];
+              // console.log(mudNow.y);
+              if( targ && (mud.x > targ.x + 5) && (mud.x < targ.x + 55) && (mud.y > targ.y + 5) && ( mud.y < targ.y + 55)){
+                mud.vx = 0; 
+                mud.vy = 0;
+                mudFlying = false;
+                console.log("trump hit")
+                clink = new Audio();
+                clink.src = "glass.mp3";
+                clink.play();
+                trumpTargetManager.trumpTargets.splice(i,1); //probably should use a kill method
+                clintonVote += 1 ;
+                trumpVote -=1;
+              }
+            }
+          }
+          if (mud){
+            for (var i = 0; i < existingClintonTargets.length; i++) {
+              var targ = existingClintonTargets[i];
+              // console.log(mudNow.y);
+              if( targ && (mud.x > targ.x + 5) && (mud.x < targ.x + 55) && (mud.y > targ.y + 5) && ( mud.y < targ.y + 55)){
+                mud.vx = 0; 
+                mud.vy = 0;
+                mudFlying = false;
+                console.log("clinton hit")
+                clink = new Audio();
+                clink.src = "glass.mp3";
+                clink.play();
+                clintonTargetManager.clintonTargets.splice(i,1); //probably should use a kill method
+                clintonVote -= 1 ;
+                trumpVote +=1;
+              }
+            }
+          }
+        } 
+
+
+
+  </script>
+</head>
+
+<body>
+
+    <nav class="navbar yay-team-navbar navbar-fixed-top" style="position:fixed; top: 0;  background-color: grey; display:block; width: 100%; z-index: 500;">
+        <div class="container-fluid">
+            <div class="navbar-header" style="float:left; display: inline-block; padding: 0px 20px 10px 20px;">
+                <!-- <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                -->
+                <a class="navbar-brand" alt="SomeTomFool.com Pop Culture Themed Games Refresh Page" href="/" style="padding-left: 10px;">SomeTomFool.com - Pop-Culture Themed JavaScript Games</a>
+                <span style="font-size: 1.4em; padding-left: 20px; float: left;">Trump vs Clinton Mudslinging Game!</span>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    
+                     
+                    
+                      <!--   <li>
+                            <a href="/retail-real-estate.html">Retail Properties</a>
+                        </li>
+                     -->
+                        <li>
+                            <a href="/">Wrecking-Ball-Game</a>
+                        </li>
+                    
+                       <!--  <li>
+                            <a href="/privacy-policy.html">About</a>
+                        </li> -->
+                    
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+<div class="canvas-plus-bar" style=""> 
+<div class="mobile-container" style="display:inline-block; margin: 0px;">
+    <div class="canvas-holder"><canvas id="canvas" width="900" height="700" />
+    </div>
+    <div class="mobile-directions">
+        <span>Mobile Directions: press (not tap) screen for all actions</span>
+    </div>
+    <div class="bottom-ad-banner" style=""> 
+        <!-- <h2> banner ad here</h2> -->
+        <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+        <!-- sometomfool.com auto -->
+            <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-4890522172660036"
+             data-ad-slot="3378142246"
+             data-ad-format="auto"></ins>
+        <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+
+    </div>
+
+</div> 
+<div class="sometomfool-right-side-description" style="margin:0px;">
+    <div class="side-item" style="display: inline-block; width: 340px; float: left; margin: 0px;">
+        <!-- <div style="width: 336px; height: 280px; background-color:beige;">
+            Google ads
+        </div> -->
+        <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+            <!-- sometomfool right box -->
+            <ins class="adsbygoogle"
+                    style="display:inline-block;width:336px;height:280px"
+                    data-ad-client="ca-pub-4890522172660036"
+                    data-ad-slot="2217636642"></ins>
+        <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+    <div class="side-item" style="display: inline-block; width: 340px;">
+        <h3>Trump Game? Clinton Game?</h3>
+        <h1>Mudslinging game!</h1>
+        <h3>Done? Try the <a href="/" title="Trump vs Clinton wrecking ball game">Wrecking-ball Game</a></h3>
+        <!-- <img src="link-images/trump-game-mud-sling.png" style="width: 200px;"> -->
+    </div> 
+
+    <div class="side-item" style="display: inline-block; width: 340px;">
+        <!-- <div style="width: 336px; height: 280px; background-color:beige;">
+            Google ads
+        </div> -->
+        <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+            <!-- sometomfool right box -->
+            <ins class="adsbygoogle"
+                 style="display:inline-block;width:336px;height:280px"
+                 data-ad-client="ca-pub-4890522172660036"
+                 data-ad-slot="2217636642"></ins>
+        <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+</div>
+
+
+    <div class="list-holder" style="clear:both;">
+        <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
+            <a href="http://toptenmaker.com/performer_rating/dog_breeds">
+                <span>Top-Ten Dog Breeds</span>
+                <img src="link-images/dog_breeds.png" style="width:160px;">
+            </a>
+        </div>
+        <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
+            <a href="http://toptenmaker.com/performer_rating/american_idols">
+                <span>Vote on American Idols</span>
+                <img src="link-images/american_idols.png" style="width:160px;">
+            </a>
+        </div>
+        <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
+            <a href="http://toptenmaker.com/performer_rating/quarterbacks">
+                <span>Rank the Quarterbacks!</span>
+                <img src="link-images/quarterbacks.png" style="width:160px;">
+            </a>
+        </div> <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
+            <a href="http://toptenmaker.com/performer_rating/game_of_thrones_characters">
+                <span>Game of Thrones</span>
+                <img src="link-images/game_of_thrones_characters.png" style="width:160px;">
+            </a>
+        </div>
+        <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
+            <a href="http://toptenmaker.com/performer_rating/colleges">
+                <span>People's College Ratings</span>
+                <img src="link-images/colleges.png" style="width:160px;">
+            </a>
+        </div>
+        <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
+            <a href="http://toptenmaker.com/performer_rating/romantic_comedies">
+                <span>Best Romantic Comedies</span>
+                <img src="link-images/romantic_comedies.png" style="width:160px; height: 257px;">
+            </a>
+        </div>
+    </div>
+
+<table style="padding: 1.5em; margin-left: auto; margin-right: auto; background-color: slateblue; float: left;">
+    <tr>
+        <td style="verticle-align:bottom; font-size: .9em;">
+            <div class="privacy-policy" style="display: inline-block; width: 340px; padding: 0em 1em;">
+                <p>Sometomfool.com privacy policy</p>
+                <p>Third party vendors, including Google, use cookies to serve ads based on a user's prior visits to this and other websites. Google's use of the DoubleClick cookie enables it and its partners to serve ads to users based on their visit to this and/or other sites on the Internet.</p>
+                <p>Users may opt out of third-party vendor's use of cookies and the use of the DoubleClick cookie for interest-based advertising by visiting aboutads.info.</p>
+            </div>
+        </td>
+        <td style="verticle-align:top;">
+            <a href="/" title="Trump is the Wreckingball">
+            <p>
+                Play the Trump Wreckingball Game!
+            </p>
+            <img src="link-images/trumpGameClinton.png" style="width: 220px;">
+            <p >
+                Determine the results of the Election!
+            </p>
+            </a>
+        </td>
+        <td style="verticle-align:top;">
+            <div class="side-item" style="display: inline-block; width: 340px;">
+                <p>Also, Check out my <a href="http://www.huecolorgame.com/">color picking game</a> </p>
+                <a href="http://www.huecolorgame.com" target="_blank">
+                <img src="link-images/colorGame.png" style="width: 300px; display:block; margin-left:auto; margin-right:auto;" alt="color game, match colors on photos">
+              </a>
+                <p>
+                    Match a colors in a series of pictures to one of 139 color choices
+                </p>
+                <!-- <div>
+                    Try it, it's Fun!
+                </div> -->
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td></td>
+        <td>
+            <div class="" style="display: inline-block; width: 340px; padding: 1.5em;">
+                <span>Copyright 2015, 2016 , Tom Norian</span>
+                <div>
+                    Hire Me! <a href="http://tomnorian.com">- Tom Norian</a>
+                </div>
+            </div>
+        </td>
+        <td></td>
+
+    </tr>
+</table>
+
+<!-- </div>  --><!-- end canvas plus bar -->
+
+<!-- <div style="clear:both; width:80%; margin-left: -99999px; margin-top: -99999px;">
+    <img src="link-images/trumpGameClinton.png" alt="Trump Game vs. Clinton wrecking-ball">
+</div> -->
+
+</body>
+
+</html>
