@@ -75,6 +75,7 @@
       if (shotsRemaining < 1){ gameOver = true; }
       if ((spacePressed || mouseIsUp) && !gameOver){ mudFlying = true; mouseIsUp =false} 
       if (mudFlying===true && mud.vx === 0 && shotsRemaining > 0){
+        SoundEffects.phhft.volume=0.05;
         SoundEffects.phhft.play();
         shotsRemaining -= 1;
         mud.vx = Math.floor((slingLeftBracketX - mud.x)/8);
@@ -345,10 +346,10 @@
 
       function ClintonScoreBar() {
         this.x = 500;
-        this.y = 45;
+        this.y = 50;
         this.draw = function(context){
           context.beginPath();
-          context.moveTo(1, 45);
+          context.moveTo(1, 49);
           context.lineTo((this.x - 200), this.y);
           context.strokeStyle="blue";
           context.lineWidth = 15;
@@ -358,10 +359,10 @@
 
       function TrumpScoreBar() {
         this.x = 500;
-        this.y = 95;
+        this.y = 100;
         this.draw = function(context){
           context.beginPath();
-          context.moveTo(1, 95);
+          context.moveTo(1, 99);
           context.lineTo((this.x - 200), this.y);
           context.strokeStyle="red";
           context.lineWidth = 15;
@@ -372,8 +373,8 @@
       function drawText(context) {
           context.font = "30px Arial";
           context.fillStyle = "black";//"#0095DD";
-          context.fillText("Clinton Support: " + clintonVote + "%", 300, 30);
-          context.fillText("Trump Support:  " + trumpVote + "%", 300, 80);
+          context.fillText("Clinton Support: " + clintonVote + "%", 300, 35);
+          context.fillText("Trump Support:  " + trumpVote + "%", 300, 85);
           context.fillText("Shots Remaining: " + shotsRemaining , 610, 674);
         } 
 
@@ -500,6 +501,7 @@
                 console.log("trump hit")
                 clink = new Audio();
                 clink.src = "glass.mp3";
+                clink.volume=0.05;
                 clink.play();
                 trumpTargetManager.trumpTargets.splice(i,1); //probably should use a kill method
                 clintonVote += 1 ;
@@ -518,6 +520,7 @@
                 console.log("clinton hit")
                 clink = new Audio();
                 clink.src = "glass.mp3";
+                clink.volume=0.05;
                 clink.play();
                 clintonTargetManager.clintonTargets.splice(i,1); //probably should use a kill method
                 clintonVote -= 1 ;
@@ -526,48 +529,25 @@
             }
           }
         } 
-
-
-
   </script>
 </head>
 
 <body>
-
-    <nav class="navbar yay-team-navbar navbar-fixed-top" style="position:fixed; top: 0;  background-color: grey; display:block; width: 100%; z-index: 500;">
-        <div class="container-fluid">
-            <div class="navbar-header" style="float:left; display: inline-block; padding: 0px 20px 10px 20px;">
-                <!-- <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                -->
-                <a class="navbar-brand" alt="SomeTomFool.com Pop Culture Themed Games Refresh Page" href="/" style="padding-left: 10px;">SomeTomFool.com - Pop-Culture Themed JavaScript Games</a>
-                <span style="font-size: 1.4em; padding-left: 20px; float: left;">Trump vs Clinton Mudslinging Game!</span>
-            </div>
-            <div id="navbar" class="navbar-collapse collapse">
-                <ul class="nav navbar-nav navbar-right">
-                    
-                     
-                    
-                      <!--   <li>
-                            <a href="/retail-real-estate.html">Retail Properties</a>
-                        </li>
-                     -->
-                        <li>
-                            <a href="/">Wrecking-Ball-Game</a>
-                        </li>
-                    
-                       <!--  <li>
-                            <a href="/privacy-policy.html">About</a>
-                        </li> -->
-                    
-                </ul>
-            </div>
-        </div>
-    </nav>
+  <nav  id="navbar-disable" class="navbar yay-team-navbar navbar-fixed-top">
+      <div class="container-fluid">
+          <div class="navbar-header" style="float:left; display: inline-block; padding: 0px 20px 10px 20px;">
+              <a class="navbar-brand" alt="SomeTomFool.com Pop Culture Themed Games Refresh Page" href="/" style="padding-left: 10px;">SomeTomFool.com - Pop-Culture Themed JavaScript Games</a>
+              <span style="font-size: 1.4em; padding-left: 20px; float: left;">Trump vs Clinton Mudslinging Game!</span>
+          </div>
+          <div id="navbar" class="navbar-collapse collapse">
+              <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="/">Wrecking-Ball-Game</a>
+                </li>
+              </ul>
+          </div>
+      </div>
+  </nav>
 
 <div class="canvas-plus-bar" style=""> 
 <div class="mobile-container" style="display:inline-block; margin: 0px;">
@@ -577,7 +557,6 @@
         <span>Mobile Directions: press (not tap) screen for all actions</span>
     </div>
     <div class="bottom-ad-banner" style=""> 
-        <!-- <h2> banner ad here</h2> -->
         <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
         <!-- sometomfool.com auto -->
             <ins class="adsbygoogle"
@@ -588,15 +567,10 @@
         <script>
             (adsbygoogle = window.adsbygoogle || []).push({});
         </script>
-
     </div>
-
 </div> 
 <div class="sometomfool-right-side-description" style="margin:0px;">
     <div class="side-item" style="display: inline-block; width: 340px; float: left; margin: 0px;">
-        <!-- <div style="width: 336px; height: 280px; background-color:beige;">
-            Google ads
-        </div> -->
         <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
             <!-- sometomfool right box -->
             <ins class="adsbygoogle"
@@ -611,13 +585,9 @@
         <h3>Trump Game? Clinton Game?</h3>
         <h1>Mudslinging game!</h1>
         <h3>Done? Try the <a href="/" title="Trump vs Clinton wrecking ball game">Wrecking-ball Game</a></h3>
-        <!-- <img src="link-images/trump-game-mud-sling.png" style="width: 200px;"> -->
     </div> 
 
     <div class="side-item" style="display: inline-block; width: 340px;">
-        <!-- <div style="width: 336px; height: 280px; background-color:beige;">
-            Google ads
-        </div> -->
         <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
             <!-- sometomfool right box -->
             <ins class="adsbygoogle"
@@ -669,16 +639,16 @@
         </div>
     </div>
 
-<table style="padding: 1.5em; margin-left: auto; margin-right: auto; background-color: slateblue; float: left;">
-    <tr>
-        <td style="verticle-align:bottom; font-size: .9em;">
-            <div class="privacy-policy" style="display: inline-block; width: 340px; padding: 0em 1em;">
+<footer >
+    <div class="footer-items" >
+        <div class="footer-item" style="verticle-align:bottom; font-size: .9em;">
+            <div class="privacy-policy" style="display: inline-block; padding: 0em 1em;">
                 <p>Sometomfool.com privacy policy</p>
                 <p>Third party vendors, including Google, use cookies to serve ads based on a user's prior visits to this and other websites. Google's use of the DoubleClick cookie enables it and its partners to serve ads to users based on their visit to this and/or other sites on the Internet.</p>
                 <p>Users may opt out of third-party vendor's use of cookies and the use of the DoubleClick cookie for interest-based advertising by visiting aboutads.info.</p>
             </div>
-        </td>
-        <td style="verticle-align:top;">
+        </div>
+        <div class="footer-item" style="verticle-align:top;">
             <a href="/" title="Trump is the Wreckingball">
             <p>
                 Play the Trump Wreckingball Game!
@@ -688,9 +658,9 @@
                 Determine the results of the Election!
             </p>
             </a>
-        </td>
-        <td style="verticle-align:top;">
-            <div class="side-item" style="display: inline-block; width: 340px;">
+        </div>
+        <div class="footer-item" style="verticle-align:top;">
+            <div class="side-item" style="display: inline-block;">
                 <p>Also, Check out my <a href="http://www.huecolorgame.com/">color picking game</a> </p>
                 <a href="http://www.huecolorgame.com" target="_blank">
                 <img src="link-images/colorGame.png" style="width: 300px; display:block; margin-left:auto; margin-right:auto;" alt="color game, match colors on photos">
@@ -698,32 +668,21 @@
                 <p>
                     Match a colors in a series of pictures to one of 139 color choices
                 </p>
-                <!-- <div>
-                    Try it, it's Fun!
-                </div> -->
             </div>
-        </td>
-    </tr>
-    <tr>
-        <td></td>
-        <td>
+        </div>
+    </div>
+    <div class="copyright">
+        <div></div>
+        <div>
             <div class="" style="display: inline-block; width: 340px; padding: 1.5em;">
-                <span>Copyright 2015, 2016 , Tom Norian</span>
+                <span>Copyright 2015, 2016, 2017 Tom Norian</span>
                 <div>
                     Hire Me! <a href="http://tomnorian.com">- Tom Norian</a>
                 </div>
             </div>
-        </td>
-        <td></td>
-
-    </tr>
-</table>
-
-<!-- </div>  --><!-- end canvas plus bar -->
-
-<!-- <div style="clear:both; width:80%; margin-left: -99999px; margin-top: -99999px;">
-    <img src="link-images/trumpGameClinton.png" alt="Trump Game vs. Clinton wrecking-ball">
-</div> -->
+        </div>
+    </div>
+</footer>
 
 </body>
 

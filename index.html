@@ -72,8 +72,8 @@
             clintonSprite = new ClintonSprite();
             music = new Audio();
             music.src = "Stars_and_Stripes.mp3";
-            music.volume = .4;
             music.loop = true;
+            music.volume=0.1;
             music.play();
 
             var foo = setInterval(
@@ -141,16 +141,16 @@
                 }
             if ((rightPressed) &&  (bb.x == 0)) {                    
                     bb.vx = 2; bb.vy = 6;//restarts the ball
-                    wrecking1 = new Audio();
+                    var wrecking1 = new Audio();
                     wrecking1.src = "wrecking-ballweb.mp3";
-                    wrecking1.volume = .1;
+                    wrecking1.volume=0.03;
                     wrecking1.play();   
                 }
             if ((leftPressed) &&  (bb.x == W - bb.width)) {                    
                     bb.vx = -2; bb.vy = 6; //restarts the ball 
-                    wrecking3 = new Audio();
+                    var wrecking3 = new Audio();
                     wrecking3.src = "wreckingBall3.mp3";
-                    wrecking3.volume = .1;
+                    wrecking3.volume=0.03;
                     wrecking3.play();   
                 }
             if(pPressed || enterPressed){
@@ -283,7 +283,7 @@
                     this.bullet.x = this.x + this.image.width / 2;
                     this.bullet.y = (this.y + this.image.height / 2 - 100);
                     shot = new Audio();
-                    shot.volume = .5;
+                    shot.volume=0.07;
                     shot.src = "shot.mp3";
                     shot.play();
                 }
@@ -549,7 +549,7 @@
                 // collision detected!
                     var groan = new Audio();
                     groan.src = "collision.mp3";
-                    groan.volume = .2;
+                    groan.volume=0.03;
                     groan.play();
                     collisionCount ++ ;
                     score += 2;  //(more points for a collision)
@@ -559,15 +559,16 @@
             }  
             if (clintonSprite.x < (blackball.x + blackball.width) &&
                 clintonSprite.x + clintonSprite.sWidthClip > blackball.x &&
-                (clintonSprite.y + 10) < blackball.y + (blackball.height - 15) &&
+                (clintonSprite.y ) < blackball.y + (blackball.height - 15) &&
                 clintonSprite.sHeightClip + clintonSprite.y + 10 > (blackball.y -15)) {
                 // collision detected!
-                    var groan = new Audio();
+                    // var groan = new Audio();
                     // groan.src = "collision.mp3";
                     // groan.play();
-                    clink = new Audio();
-                    clink.src = "glass.mp3";
-                    clink.play();
+                    var clinkHC = new Audio();
+                    clinkHC.src = "glass.mp3";
+                    clinkHC.volume=0.1;
+                    clinkHC.play();
                     collisionCount ++ ;
                     score += 2;  //(more points for a collision)
                     // clintonSprite.hit = true;
@@ -582,8 +583,9 @@
                     for(brow=0; brow<chandelierRowCount; brow++) {
                         var b = chandeliers[bcol][brow]; //test location with shorthand below
                         if(b.status == 1){ //showing or not "status" is a foo named key in hash
-                            if(bullet.x > b.x && bullet.x < b.x+chandelierWidth && bullet.y > b.y && bullet.y < b.y+chandelierHeight) {
-                                clink = new Audio();
+                            if(bullet.x > b.x - 2 && bullet.x < b.x+chandelierWidth + 2 && bullet.y > b.y && bullet.y < b.y+chandelierHeight) {
+                                var clink = new Audio();
+                                clink.volume=0.05;
                                 clink.src = "glass.mp3";
                                 clink.play();
                                 b.status = 0; //after hit set to invisible
@@ -601,7 +603,6 @@
             c.fillText("You are a Winner !", 200, 260);
             c.fillText("It took you only " + finalTicks + " Ticks", 200, 300);
             c.fillText("Press P to Play Again!", 200, 360);
-            // clearInterval(foo); //looking for a place for this currently keeps updating
         }
 
         function announceVictory(){
@@ -614,46 +615,26 @@
             finalTicks = masterTicks + " Teensy";
             winMusic = new Audio();
             winMusic.src = "odetojoy.mp3";
-            winMusic.volume = .6;
+            winMusic.volume=0.1;
             winMusic.play();
             winMusic.loop = true;
-            // clearInterval(foo); // won't work here or anywhere
         } 
 
     </script>
 </head>
 <body>
 
-    <nav class="navbar yay-team-navbar navbar-fixed-top" style="position:fixed; top: 0;  background-color: grey; display:block; width: 100%; z-index: 500;">
+    <nav id="navbar-disable" class="navbar yay-team-navbar navbar-fixed-top" >
         <div class="container-fluid">
             <div class="navbar-header" style="float:left; display: inline-block; padding: 0px 20px 10px 20px;">
-                <!-- <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                -->
                 <a class="navbar-brand" alt="SomeTomFool.com Pop Culture Themed Games Refresh Page" href="/" style="padding-left: 10px;">SomeTomFool.com - Pop-Culture Themed JavaScript Games</a>
                 <span style="font-size: 1.6em; padding-left: 20px; float: left;">Trump Game? Wrecking-ball Game!</span>
             </div>
             <div id="navbar" class="navbar-collapse collapse">
                 <ul class="nav navbar-nav navbar-right">
-                    
-                     
-                    
-                      <!--   <li>
-                            <a href="/retail-real-estate.html">Retail Properties</a>
-                        </li>
-                     -->
                         <li>
                             <a href="trump-clinton-mudslinging-game.html">Mudslinging-Game</a>
                         </li>
-                    
-                        <!-- <li>
-                            <a href="/privacy-policy.html">About</a>
-                        </li> -->
-                    
                 </ul>
             </div>
         </div>
@@ -667,7 +648,6 @@
         <span>Mobile Directions: press (not tap) screen for all actions</span>
     </div>
     <div class="bottom-ad-banner" style=""> 
-        <!-- <h2> banner ad here</h2> -->
         <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
         <!-- sometomfool.com auto -->
             <ins class="adsbygoogle"
@@ -678,15 +658,10 @@
         <script>
             (adsbygoogle = window.adsbygoogle || []).push({});
         </script>
-
     </div>
-
 </div> 
 <div class="sometomfool-right-side-description" style="margin:0px;">
     <div class="side-item" style="display: inline-block; width: 340px; float: left; margin: 0px;">
-        <!-- <div style="width: 336px; height: 280px; background-color:beige;">
-            Google ads
-        </div> -->
         <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
             <!-- sometomfool right box -->
             <ins class="adsbygoogle"
@@ -701,13 +676,8 @@
         <h3>Trump Game? Clinton Game?</h3>
         <h1>Wrecking-ball game!</h1>
         <h3>Done? Try the <a href="trump-clinton-mudslinging-game.html" title="Trump vs Clinton mudslinging game">Mudslinging Game</a></h3>
-        <!-- <img src="link-images/trump-game-mud-sling.png" style="width: 200px;"> -->
     </div> 
-
     <div class="side-item" style="display: inline-block; width: 340px;">
-        <!-- <div style="width: 336px; height: 280px; background-color:beige;">
-            Google ads
-        </div> -->
         <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
             <!-- sometomfool right box -->
             <ins class="adsbygoogle"
@@ -721,66 +691,66 @@
 </div>
 
 
-    <div class="list-holder" style="clear:both;">
-        <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
-            <a href="http://toptenmaker.com/performer_rating/dog_breeds">
-                <span>Top-Ten Dog Breeds</span>
-                <img src="link-images/dog_breeds.png" style="width:160px;">
-            </a>
-        </div>
-        <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
-            <a href="http://toptenmaker.com/performer_rating/american_idols">
-                <span>Vote on American Idols</span>
-                <img src="link-images/american_idols.png" style="width:160px;">
-            </a>
-        </div>
-        <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
-            <a href="http://toptenmaker.com/performer_rating/quarterbacks">
-                <span>Rank the Quarterbacks!</span>
-                <img src="link-images/quarterbacks.png" style="width:160px;">
-            </a>
-        </div> <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
-            <a href="http://toptenmaker.com/performer_rating/game_of_thrones_characters">
-                <span>Game of Thrones</span>
-                <img src="link-images/game_of_thrones_characters.png" style="width:160px;">
-            </a>
-        </div>
-        <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
-            <a href="http://toptenmaker.com/performer_rating/colleges">
-                <span>People's College Ratings</span>
-                <img src="link-images/colleges.png" style="width:160px;">
-            </a>
-        </div>
-        <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
-            <a href="http://toptenmaker.com/performer_rating/romantic_comedies">
-                <span>Best Romantic Comedies</span>
-                <img src="link-images/romantic_comedies.png" style="width:160px; height: 257px;">
-            </a>
-        </div>
+<div class="list-holder" style="clear:both;">
+    <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
+        <a href="http://toptenmaker.com/performer_rating/dog_breeds">
+            <span>Top-Ten Dog Breeds</span>
+            <img src="link-images/dog_breeds.png" style="width:160px;">
+        </a>
     </div>
+    <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
+        <a href="http://toptenmaker.com/performer_rating/american_idols">
+            <span>Vote on American Idols</span>
+            <img src="link-images/american_idols.png" style="width:160px;">
+        </a>
+    </div>
+    <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
+        <a href="http://toptenmaker.com/performer_rating/quarterbacks">
+            <span>Rank the Quarterbacks!</span>
+            <img src="link-images/quarterbacks.png" style="width:160px;">
+        </a>
+    </div> <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
+        <a href="http://toptenmaker.com/performer_rating/game_of_thrones_characters">
+            <span>Game of Thrones</span>
+            <img src="link-images/game_of_thrones_characters.png" style="width:160px;">
+        </a>
+    </div>
+    <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
+        <a href="http://toptenmaker.com/performer_rating/colleges">
+            <span>People's College Ratings</span>
+            <img src="link-images/colleges.png" style="width:160px;">
+        </a>
+    </div>
+    <div class="top-ten-list-maker" style="display: inline-block; width: 180px;">
+        <a href="http://toptenmaker.com/performer_rating/romantic_comedies">
+            <span>Best Romantic Comedies</span>
+            <img src="link-images/romantic_comedies.png" style="width:160px; height: 257px;">
+        </a>
+    </div>
+</div>
 
-<table style="padding: 1.5em; margin-left: auto; margin-right: auto; background-color: slateblue; float: left;">
-    <tr>
-        <td>
-            <div class="privacy-policy" style="display: inline-block; width: 340px; padding: 0em 1em;">
+<footer >
+    <div class="footer-items" >
+        <div class="footer-item" style="verticle-align:bottom; font-size: .9em;">
+            <div class="privacy-policy" style="display: inline-block; padding: 0em 1em;">
                 <p>Sometomfool.com privacy policy</p>
                 <p>Third party vendors, including Google, use cookies to serve ads based on a user's prior visits to this and other websites. Google's use of the DoubleClick cookie enables it and its partners to serve ads to users based on their visit to this and/or other sites on the Internet.</p>
                 <p>Users may opt out of third-party vendor's use of cookies and the use of the DoubleClick cookie for interest-based advertising by visiting aboutads.info.</p>
             </div>
-        </td>
-        <td style="verticle-align:top;">
-            <a href="trump-clinton-mudslinging-game.html" title="Trump vs Clinton mudslinging game">
+        </div>
+        <div class="footer-item" style="verticle-align:top;">
+            <a href="/" title="Trump is the Wreckingball">
             <p>
-                Play the Trump vs. Clinton Mudslinging game!
+                Play the Trump Wreckingball Game!
             </p>
-            <img src="link-images/trump-game-mud-sling.png" style="width: 200px;">
+            <img src="link-images/trumpGameClinton.png" style="width: 220px;">
             <p >
                 Determine the results of the Election!
             </p>
             </a>
-        </td>
-        <td style="verticle-align:top;">
-            <div class="side-item" style="display: inline-block; width: 340px;">
+        </div>
+        <div class="footer-item" style="verticle-align:top;">
+            <div class="side-item" style="display: inline-block;">
                 <p>Also, Check out my <a href="http://www.huecolorgame.com/">color picking game</a> </p>
                 <a href="http://www.huecolorgame.com" target="_blank">
                 <img src="link-images/colorGame.png" style="width: 300px; display:block; margin-left:auto; margin-right:auto;" alt="color game, match colors on photos">
@@ -788,32 +758,21 @@
                 <p>
                     Match a colors in a series of pictures to one of 139 color choices
                 </p>
-                <!-- <div>
-                    Try it, it's Fun!
-                </div> -->
             </div>
-        </td>
-    </tr>
-    <tr>
-        <td></td>
-        <td>
+        </div>
+    </div>
+    <div class="copyright">
+        <div>
             <div class="" style="display: inline-block; width: 340px; padding: 1.5em;">
-                <span>Copyright 2015, 2016 , Tom Norian</span>
+                <span>Copyright 2015, 2016, 2017 Tom Norian</span>
                 <div>
                     Hire Me! <a href="http://tomnorian.com">- Tom Norian</a>
                 </div>
             </div>
-        </td>
-        <td></td>
+        </div>
+    </div>
+</footer>
 
-    </tr>
-</table>
-
-<!-- </div>  --><!-- end canvas plus bar -->
-
-<!-- <div style="clear:both; width:80%; margin-left: -99999px; margin-top: -99999px;">
-    <img src="link-images/trumpGameClinton.png" alt="Trump Game vs. Clinton wrecking-ball">
-</div> -->
 
 </body>
 <!-- credits for music use go to:

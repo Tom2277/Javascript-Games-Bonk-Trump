@@ -1,79 +1,122 @@
-body{
+body {
   background-color: white;
   font-family: Verdana;
-  font-size: .9em;
+  font-size: 0.9em;
   padding: 0px;
   margin: 0px;
 }
 
-h1, h4{ 
+h1,
+h4 {
   line-height: 1em;
 }
 
-canvas{
+canvas {
   width: 100vw;
 }
-.canvas-holder{
+.canvas-holder {
   /*float: left;*/
   display: inline-block;
 }
-.sometomfool-right-side-description{
+.sometomfool-right-side-description {
   width: 100%;
   background-color: white;
-  margin:0px;
+  margin: 0px;
   padding: 0em 1em;
   display: inline-block;
   position: relative;
 }
 
-.mobile-directions{
+.mobile-directions {
   float: left;
   max-width: 900px;
   font-size: 1.5em;
 }
 
-.bottom-ad-banner{
-  clear:both; 
-  max-width: 900px; 
+.bottom-ad-banner {
+  clear: both;
+  max-width: 900px;
   height: 100px;
   background-color: white;
 }
-
 
 /*.canvas-plus-bar{
   margin-top: 50px;
 }*/
 
-@media (min-width: 910px){
-  canvas{
+.navbar.yay-team-navbar.navbar-fixed-top {
+  position: fixed;
+  top: 0;
+  background-color: grey;
+  display: block;
+  width: 100%;
+  z-index: 500;
+}
+
+.list-holder {
+  text-align: center;
+}
+
+footer {
+  padding: 1.5em;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #808080;
+  /*float: left;*/
+}
+
+.footer-items {
+  text-align: center;
+}
+.footer-item {
+  display: inline-block;
+  max-width: 320px;
+}
+
+.copyright {
+  display: block;
+  text-align: center;
+}
+
+@media (max-width: 910px) {
+  #navbar-disable {
+    display: none;
+  }
+}
+
+@media (min-width: 910px) {
+  canvas {
     height: 700px;
     width: 900px;
   }
-  .mobile-directions{
+  .mobile-directions {
     display: none;
-   
   }
-  .sometomfool-right-side-description{
+  .sometomfool-right-side-description {
     /*position: absolute;*/
-    width:350px;
+    width: 350px;
     clear: none;
     /*height: 803px;*/
   }
 
-  .canvas-plus-bar{
-    width: 1340px; margin-top: 40px; margin-left: auto; margin-right:auto; float:none; position:relative; background-color:white;
+  .canvas-plus-bar {
+    width: 1340px;
+    margin-top: 40px;
+    margin-left: auto;
+    margin-right: auto;
+    float: none;
+    position: relative;
+    background-color: white;
   }
-
 }
 
-li{
+li {
   float: right;
   list-style: none;
   display: inline-block;
   padding: 0px 20px;
 }
 
-td{
+td {
   vertical-align: bottom;
 }
-
